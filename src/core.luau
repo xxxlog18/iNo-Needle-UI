@@ -208,6 +208,7 @@ function Library:CreateWindow(config)
     function window:ResetPosition()
         local viewport=workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1100,700)
         self:SetPosition((viewport-frame.AbsoluteSize)/2)
+        call(self.OnPositionChanged,{x=frame.Position.X.Offset/math.max(1,viewport.X),y=frame.Position.Y.Offset/math.max(1,viewport.Y)})
     end
     function window:SetBrandImage(image)
         logo.Image=image or '';fallback.Visible=logo.Image==''
