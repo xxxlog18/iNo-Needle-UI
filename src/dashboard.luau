@@ -22,7 +22,7 @@ return function(library,window,state,remotes,player,savedOptions)
         return frame
     end
     local metrics=make('Frame',{Name='ConfirmedMetrics',Size=UDim2.new(1,0,0,68),BackgroundTransparency=1,LayoutOrder=1},overview.Content)
-    local values={}
+    local values,metricTitles,metricIcons={},{},{}
     for index,item in ipairs({{'เงินสด','฿',Color3.fromRGB(158,219,96)},{'เพชร','◇',Color3.fromRGB(70,198,242)},{'กระเป๋า','▣',Color3.fromRGB(242,200,83)}}) do
         local frame=make('Frame',{Size=UDim2.new(1/3,-7,1,0),Position=UDim2.new((index-1)/3,(index-1)*3,0,0),BackgroundColor3=C.Card},metrics)
         ctx.Round(frame,9);ctx.Stroke(frame,C.Line)
@@ -30,6 +30,7 @@ return function(library,window,state,remotes,player,savedOptions)
         local title=label(frame,item[1],11,C.Muted);title.Position=UDim2.fromOffset(44,7);title.Size=UDim2.new(1,-50,0,20)
         local value=label(frame,'—',18,C.Text);value.Position=UDim2.fromOffset(44,30);value.Size=UDim2.new(1,-50,0,28);value.Font=Enum.Font.GothamBold
         values[index]=value
+        metricTitles[index]=title;metricIcons[index]=icon
     end
     local segments=make('Frame',{Name='DashboardSections',Position=UDim2.fromOffset(0,74),Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,Visible=false},overview.Content)
     local columns=make('Frame',{Name='DashboardColumns',Position=UDim2.fromOffset(0,80),Size=UDim2.new(1,0,1,-80),BackgroundTransparency=1},overview.Content)
@@ -111,9 +112,13 @@ return function(library,window,state,remotes,player,savedOptions)
     end
     local function reflow(width)
         local narrow=width<460
+        local short=window.Height<380
+        metrics.Visible=not short
         segments.Visible=narrow
-        columns.Position=UDim2.fromOffset(0,narrow and 114 or 80)
-        columns.Size=UDim2.new(1,0,1,narrow and -114 or -80)
+        segments.Position=UDim2.fromOffset(0,short and 0 or 74)
+        local top=short and (narrow and 40 or 0) or (narrow and 114 or 80)
+        columns.Position=UDim2.fromOffset(0,top)
+        columns.Size=UDim2.new(1,0,1,-top)
         if narrow then
             leftScroll.Size=UDim2.fromScale(1,1);rightScroll.Size=UDim2.fromScale(1,1)
             rightScroll.Position=UDim2.fromOffset(0,0)
@@ -122,7 +127,13 @@ return function(library,window,state,remotes,player,savedOptions)
             leftScroll.Size=UDim2.new(0.5,-7,1,0);rightScroll.Size=UDim2.new(0.5,-7,1,0);rightScroll.Position=UDim2.new(0.5,7,0,0)
             leftScroll.Visible=true;rightScroll.Visible=true
         end
-        for _,value in ipairs(values) do value.TextSize=width<460 and 14 or 18 end
+        for index,value in ipairs(values) do
+            value.TextSize=narrow and 14 or 18
+            value.Position=UDim2.fromOffset(narrow and 8 or 44,30);value.Size=UDim2.new(1,narrow and -16 or -50,0,28)
+            metricTitles[index].Position=UDim2.fromOffset(narrow and 8 or 44,7)
+            metricTitles[index].Size=UDim2.new(1,narrow and -16 or -50,0,20)
+            metricIcons[index].Visible=not narrow
+        end
     end
     window.OnResize=reflow
     for name,button in pairs(sectionButtons) do
