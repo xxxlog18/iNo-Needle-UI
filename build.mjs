@@ -6,17 +6,7 @@ const localize=read('./src/localize.luau');
 const dashboard=read('./src/dashboard.luau');
 const literal=value=>typeof value==='string'?JSON.stringify(value):'{'+Object.entries(value).map(([key,item])=>`[${JSON.stringify(key)}]=${literal(item)}`).join(',')+'}';
 const dictionary=literal(JSON.parse(read('./src/thai.json')));
-const api=`
-Library.ApiVersion=2
-function Library:InstallThaiDisplay()
-    if self.ThaiInstalled then return end
-    installThaiDisplay(self,thaiDictionary)
-    self.ThaiInstalled=true
-end
-function Library:AttachNeedleDashboard(window,state,remotes,player,savedOptions)
-    return attachDashboard(self,window,state,remotes,player,savedOptions)
-end
-return Library
-`;
-fs.writeFileSync(new URL('./main.lua',import.meta.url),`-- iNo Needle UI | Custom dark/lime interface\nlocal buildControls=(function()\n${controls}\nend)()\nlocal installThaiDisplay=(function()\n${localize}\nend)()\nlocal thaiDictionary=${dictionary}\nlocal attachDashboard=(function()\n${dashboard}\nend)()\n${core.replace(/\nreturn Library\s*$/,'')}\n${api}`);
-console.log('Built independent iNo UI library');
+fs.writeFileSync(new URL('./main.lua',import.meta.url),`-- iNo UI 2.0 | Reusable UI only. No automatic tabs or gameplay.\nlocal buildControls=(function()\n${controls}\nend)()\n${core.replace(/\nreturn Library\s*$/,'')}\nLibrary.ApiVersion=3\nreturn Library\n`);
+fs.mkdirSync(new URL('./extensions/',import.meta.url),{recursive:true});
+fs.writeFileSync(new URL('./extensions/needle.lua',import.meta.url),`-- Optional Needle Helper presentation. Not loaded by main.lua.\nlocal installThaiDisplay=(function()\n${localize}\nend)()\nlocal thaiDictionary=${dictionary}\nlocal attachDashboard=(function()\n${dashboard}\nend)()\nlocal NeedleUI={ApiVersion=1}\nfunction NeedleUI:InstallThaiDisplay(library)\n    if library.ThaiInstalled then return end\n    installThaiDisplay(library,thaiDictionary)\n    library.ThaiInstalled=true\nend\nfunction NeedleUI:AttachDashboard(library,window,state,remotes,player,savedOptions)\n    return attachDashboard(library,window,state,remotes,player,savedOptions)\nend\nreturn NeedleUI\n`);
+console.log('Built blank iNo UI and separate optional Needle presentation');
