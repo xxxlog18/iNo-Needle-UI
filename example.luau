@@ -1,15 +1,15 @@
--- Independent library example. No gameplay automation is started here.
-local iNo=loadstring(game:HttpGet('https://raw.githubusercontent.com/xxxlog18/iNo-Needle-UI/refs/heads/main/main.lua'))()
-local window=iNo:CreateWindow({Size=UDim2.fromOffset(760,480),UIScale=1,MinimizeKey=Enum.KeyCode.RightControl})
-local farm=window:AddTab({Title='เก็บฟาง'})
-farm:AddToggle('ExampleAuto',{Title='ตัวอย่างสวิตช์',Description='ตัวอย่างนี้แจ้งค่าอย่างเดียว ไม่ได้เริ่มเก็บฟาง',Default=false}):OnChanged(function(value)
+-- Generic controls demo. Use empty.luau for a window with no controls.
+local UI=loadstring(game:HttpGet('https://raw.githubusercontent.com/xxxlog18/iNo-Needle-UI/refs/heads/main/main.lua'))()
+local window=UI:CreateWindow({Title='สคริปต์ของฉัน',SubTitle='ตัวอย่างตัวควบคุม',Size=UDim2.fromOffset(700,460),UIScale=1})
+local general=window:AddTab({Title='ทั่วไป',Icon='home'})
+general:AddToggle('ExampleToggle',{Title='ตัวอย่างสวิตช์',Description='แสดงค่าที่เลือกในคอนโซล เชื่อมการทำงานเองใน OnChanged',Default=false}):OnChanged(function(value)
     print('Example toggle:',value)
 end)
-farm:AddSlider('ExampleRadius',{Title='ระยะค้นหา',Min=3,Max=25,Rounding=0,Default=18})
-farm:AddDropdown('ExamplePriority',{Title='ลำดับการเก็บ',Values={'เพชร → หายาก → ธรรมดา','หายาก → ธรรมดา'},Default=1})
-local settings=window:AddTab({Title='ตั้งค่า'})
+general:AddSlider('ExampleAmount',{Title='จำนวน',Min=1,Max=100,Rounding=0,Default=10})
+general:AddDropdown('ExampleMode',{Title='รูปแบบ',Values={'แบบที่หนึ่ง','แบบที่สอง'},Default=1})
+general:AddButton({Title='ตัวอย่างปุ่ม',Callback=function() UI:Notify({Content='กดปุ่มแล้ว'}) end})
+local settings=window:AddTab({Title='ตั้งค่า',Icon='settings'})
 settings:AddInput('ExampleName',{Title='ชื่อโปรไฟล์',Default='ส่วนตัว',Finished=true})
-settings:AddColorpicker('ExampleColor',{Title='สีไฮไลต์',Default=Color3.fromRGB(177,236,79)})
-window.OnPause=function() iNo.Options.ExampleAuto:SetValue(false) end
-window:SelectTab(farm)
--- RightControl toggles the window. The full helper also includes its draggable iNo icon.
+settings:AddColorpicker('ExampleColor',{Title='สี',Default=Color3.fromRGB(177,236,79)})
+window:SelectTab(general)
+-- RightControl shows/hides the window. No automatic saving or logging.
