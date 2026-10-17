@@ -1,4 +1,4 @@
-local Library={Options={},Unloaded=false,Version='iNo UI 1.1',Connections={}}
+local Library={Options={},Unloaded=false,Version='iNo UI 1.2',Connections={}}
 local C={Background=Color3.fromRGB(15,20,22),Sidebar=Color3.fromRGB(16,23,25),Card=Color3.fromRGB(23,31,33),Input=Color3.fromRGB(17,24,26),Line=Color3.fromRGB(48,62,65),Text=Color3.fromRGB(231,239,232),Muted=Color3.fromRGB(155,175,168),Lime=Color3.fromRGB(177,236,79),Selected=Color3.fromRGB(38,54,34),Inactive=Color3.fromRGB(65,77,80),White=Color3.new(1,1,1),Red=Color3.fromRGB(235,87,85)}
 local input=game:GetService('UserInputService')
 local function make(class,properties,parent)
@@ -94,7 +94,7 @@ function Library:CreateWindow(config)
     if type(gethui)=='function' then local ok,value=pcall(gethui);if ok and value then parent=value end end
     local gui=make('ScreenGui',{Name='iNoNeedleUI',ResetOnSpawn=false,IgnoreGuiInset=true,DisplayOrder=10000,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},parent)
     self.Gui=gui
-    local window={Tabs={},Rows={},Selected=nil,Scale=1,Visible=true,Zoom=math.clamp(tonumber(config.UIScale) or 1.35,0.9,1.75)}
+    local window={Tabs={},Rows={},Selected=nil,Scale=1,Visible=true,Zoom=math.clamp(tonumber(config.UIScale) or 1,0.8,1.5),RequestedSize=config.Size or UDim2.fromOffset(760,480)}
     self.Window=window
     local frame=make('Frame',{Name='Window',Size=UDim2.fromOffset(1000,650),BackgroundColor3=C.Background,ClipsDescendants=false,Active=true},gui)
     window.Root=frame;round(frame,12);stroke(frame,C.Line)
@@ -145,6 +145,7 @@ function Library:CreateWindow(config)
     end
     local function popup(anchor,builder,height)
         window:ClosePopup()
+        height=math.min(height,window.Height-24)
         local overlay=make('TextButton',{Name='PopupLayer',Size=UDim2.fromScale(1,1),Text='',BackgroundColor3=Color3.new(0,0,0),BackgroundTransparency=0.4,ZIndex=50},frame)
         window.Popup=overlay
         local width=math.min(340,window.Width-32)
@@ -275,12 +276,16 @@ function Library:CreateWindow(config)
     end)
     function window:Resize()
         local viewport=workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1100,700)
-        self.Width=math.max(360,math.min(1000,viewport.X-24)/self.Zoom)
-        self.Height=math.max(300,math.min(650,viewport.Y-36)/self.Zoom)
-        self.Scale=math.min(self.Zoom,(viewport.X-18)/self.Width,(viewport.Y-24)/self.Height)
+        local requested=self.RequestedSize
+        local width=math.max(1,math.min(requested.X.Scale*viewport.X+requested.X.Offset,viewport.X-24))
+        local height=math.max(1,math.min(requested.Y.Scale*viewport.Y+requested.Y.Offset,viewport.Y-24))
+        self.Scale=math.min(self.Zoom,width/360,height/280)
+        self.Width=width/self.Scale
+        self.Height=height/self.Scale
         frame.Size=UDim2.fromOffset(self.Width,self.Height);scale.Scale=self.Scale
-        local side=self.Width<760 and 126 or 176
+        local side=self.Width<520 and 56 or self.Width<760 and 126 or 152
         sidebar.Size=UDim2.new(0,side,1,-100);content.Position=UDim2.fromOffset(side,56);content.Size=UDim2.new(1,-side,1,-100)
+        for _,tab in ipairs(self.Tabs) do tab.Caption.Visible=side>60 end
         local compact=self.Width-side<540
         pageTitle.Visible=not compact
         search.Position=compact and UDim2.fromOffset(14,15) or UDim2.new(1,-267,0,16)
@@ -291,8 +296,11 @@ function Library:CreateWindow(config)
         if self.OnResize then call(self.OnResize,self.Width-side-44) end
     end
     function window:SetZoom(value)
-        self.Zoom=math.clamp(tonumber(value) or self.Zoom,0.9,1.75)
+        self.Zoom=math.clamp(tonumber(value) or self.Zoom,0.8,1.5)
         self:ClosePopup();self:Resize()
+    end
+    function window:SetSize(size)
+        self.RequestedSize=size;self:ClosePopup();self:Resize()
     end
     local cameraConnection
     local function watchCamera()
