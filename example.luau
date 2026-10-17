@@ -1,6 +1,6 @@
 -- Independent library example. No gameplay automation is started here.
-local iNo=loadstring(game:HttpGet('https://raw.githubusercontent.com/xxxlog18/iNo-Needle-UI/main/main.lua'))()
-local window=iNo:CreateWindow({MinimizeKey=Enum.KeyCode.RightControl})
+local iNo=loadstring(game:HttpGet('https://raw.githubusercontent.com/xxxlog18/iNo-Needle-UI/refs/heads/main/main.lua'))()
+local window=iNo:CreateWindow({Size=UDim2.fromOffset(760,480),UIScale=1,MinimizeKey=Enum.KeyCode.RightControl})
 local farm=window:AddTab({Title='เก็บฟาง'})
 farm:AddToggle('ExampleAuto',{Title='ตัวอย่างสวิตช์',Description='ตัวอย่างนี้แจ้งค่าอย่างเดียว ไม่ได้เริ่มเก็บฟาง',Default=false}):OnChanged(function(value)
     print('Example toggle:',value)
