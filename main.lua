@@ -337,7 +337,7 @@ return function(library,window,state,remotes,player,savedOptions)
         return frame
     end
     local metrics=make('Frame',{Name='ConfirmedMetrics',Size=UDim2.new(1,0,0,68),BackgroundTransparency=1,LayoutOrder=1},overview.Content)
-    local values={}
+    local values,metricTitles,metricIcons={},{},{}
     for index,item in ipairs({{'เงินสด','฿',Color3.fromRGB(158,219,96)},{'เพชร','◇',Color3.fromRGB(70,198,242)},{'กระเป๋า','▣',Color3.fromRGB(242,200,83)}}) do
         local frame=make('Frame',{Size=UDim2.new(1/3,-7,1,0),Position=UDim2.new((index-1)/3,(index-1)*3,0,0),BackgroundColor3=C.Card},metrics)
         ctx.Round(frame,9);ctx.Stroke(frame,C.Line)
@@ -345,6 +345,7 @@ return function(library,window,state,remotes,player,savedOptions)
         local title=label(frame,item[1],11,C.Muted);title.Position=UDim2.fromOffset(44,7);title.Size=UDim2.new(1,-50,0,20)
         local value=label(frame,'—',18,C.Text);value.Position=UDim2.fromOffset(44,30);value.Size=UDim2.new(1,-50,0,28);value.Font=Enum.Font.GothamBold
         values[index]=value
+        metricTitles[index]=title;metricIcons[index]=icon
     end
     local segments=make('Frame',{Name='DashboardSections',Position=UDim2.fromOffset(0,74),Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,Visible=false},overview.Content)
     local columns=make('Frame',{Name='DashboardColumns',Position=UDim2.fromOffset(0,80),Size=UDim2.new(1,0,1,-80),BackgroundTransparency=1},overview.Content)
@@ -426,9 +427,13 @@ return function(library,window,state,remotes,player,savedOptions)
     end
     local function reflow(width)
         local narrow=width<460
+        local short=window.Height<380
+        metrics.Visible=not short
         segments.Visible=narrow
-        columns.Position=UDim2.fromOffset(0,narrow and 114 or 80)
-        columns.Size=UDim2.new(1,0,1,narrow and -114 or -80)
+        segments.Position=UDim2.fromOffset(0,short and 0 or 74)
+        local top=short and (narrow and 40 or 0) or (narrow and 114 or 80)
+        columns.Position=UDim2.fromOffset(0,top)
+        columns.Size=UDim2.new(1,0,1,-top)
         if narrow then
             leftScroll.Size=UDim2.fromScale(1,1);rightScroll.Size=UDim2.fromScale(1,1)
             rightScroll.Position=UDim2.fromOffset(0,0)
@@ -437,7 +442,13 @@ return function(library,window,state,remotes,player,savedOptions)
             leftScroll.Size=UDim2.new(0.5,-7,1,0);rightScroll.Size=UDim2.new(0.5,-7,1,0);rightScroll.Position=UDim2.new(0.5,7,0,0)
             leftScroll.Visible=true;rightScroll.Visible=true
         end
-        for _,value in ipairs(values) do value.TextSize=width<460 and 14 or 18 end
+        for index,value in ipairs(values) do
+            value.TextSize=narrow and 14 or 18
+            value.Position=UDim2.fromOffset(narrow and 8 or 44,30);value.Size=UDim2.new(1,narrow and -16 or -50,0,28)
+            metricTitles[index].Position=UDim2.fromOffset(narrow and 8 or 44,7)
+            metricTitles[index].Size=UDim2.new(1,narrow and -16 or -50,0,20)
+            metricIcons[index].Visible=not narrow
+        end
     end
     window.OnResize=reflow
     for name,button in pairs(sectionButtons) do
@@ -824,15 +835,27 @@ function Library:CreateWindow(config)
         self.Width=width/self.Scale
         self.Height=height/self.Scale
         frame.Size=UDim2.fromOffset(self.Width,self.Height);scale.Scale=self.Scale
+        local short=self.Height<380
+        local headerHeight=short and 44 or 56
+        local footerHeight=short and 40 or 44
+        header.Size=UDim2.new(1,0,0,headerHeight)
+        logo.Size=UDim2.fromOffset(short and 32 or 39,short and 32 or 39)
+        logo.Position=UDim2.fromOffset(18,short and 6 or 8)
+        title.Position=UDim2.fromOffset(68,short and 6 or 15);name.Position=UDim2.fromOffset(117,short and 6 or 15)
+        title.TextSize=short and 20 or 25;name.TextSize=short and 20 or 25
+        minimize.Position=UDim2.new(1,-95,0,short and 1 or 7);close.Position=UDim2.new(1,-49,0,short and 1 or 7)
+        footer.Position=UDim2.new(0,0,1,-footerHeight);footer.Size=UDim2.new(1,0,0,footerHeight)
         local side=self.Width<520 and 56 or self.Width<760 and 126 or 152
-        sidebar.Size=UDim2.new(0,side,1,-100);content.Position=UDim2.fromOffset(side,56);content.Size=UDim2.new(1,-side,1,-100)
+        sidebar.Position=UDim2.fromOffset(0,headerHeight);sidebar.Size=UDim2.new(0,side,1,-headerHeight-footerHeight)
+        content.Position=UDim2.fromOffset(side,headerHeight);content.Size=UDim2.new(1,-side,1,-headerHeight-footerHeight)
         for _,tab in ipairs(self.Tabs) do tab.Caption.Visible=side>60 end
         local compact=self.Width-side<540
         pageTitle.Visible=not compact
-        search.Position=compact and UDim2.fromOffset(14,15) or UDim2.new(1,-267,0,16)
-        search.Size=compact and UDim2.new(1,-28,0,36) or UDim2.fromOffset(245,36)
-        pages.Position=UDim2.fromOffset(compact and 14 or 22,65);pages.Size=UDim2.new(1,compact and -28 or -44,1,-80)
-        map.Visible=self.Width>=590;ready.Visible=self.Width>=650
+        pageTitle.Position=UDim2.fromOffset(23,short and 4 or 16);pageTitle.TextSize=short and 20 or 24
+        search.Position=compact and UDim2.fromOffset(14,short and 5 or 15) or UDim2.new(1,-267,0,short and 5 or 16)
+        search.Size=compact and UDim2.new(1,-28,0,short and 30 or 36) or UDim2.fromOffset(245,short and 30 or 36)
+        pages.Position=UDim2.fromOffset(compact and 14 or 22,short and 43 or 65);pages.Size=UDim2.new(1,compact and -28 or -44,1,short and -52 or -80)
+        map.Visible=self.Width>=590 and not short;ready.Visible=self.Width>=650 and not short
         self:SetPosition(Vector2.new(frame.Position.X.Offset,frame.Position.Y.Offset))
         if self.OnResize then call(self.OnResize,self.Width-side-44) end
     end
