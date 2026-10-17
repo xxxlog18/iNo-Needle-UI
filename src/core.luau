@@ -1,4 +1,4 @@
-local Library={Options={},Unloaded=false,Version='iNo UI 1.2',Connections={}}
+local Library={Options={},Unloaded=false,Version='iNo UI 2.0',Connections={}}
 local C={Background=Color3.fromRGB(15,20,22),Sidebar=Color3.fromRGB(16,23,25),Card=Color3.fromRGB(23,31,33),Input=Color3.fromRGB(17,24,26),Line=Color3.fromRGB(48,62,65),Text=Color3.fromRGB(231,239,232),Muted=Color3.fromRGB(155,175,168),Lime=Color3.fromRGB(177,236,79),Selected=Color3.fromRGB(38,54,34),Inactive=Color3.fromRGB(65,77,80),White=Color3.new(1,1,1),Red=Color3.fromRGB(235,87,85)}
 local input=game:GetService('UserInputService')
 local function make(class,properties,parent)
@@ -25,8 +25,7 @@ local function call(callback,...)
     local ok,err=pcall(callback,...)
     if not ok then warn('[iNo UI] '..tostring(err));Library:Notify({Title='ทำงานไม่สำเร็จ',Content=tostring(err),Duration=5}) end
 end
-local priorities={['ภาพรวม']=0,['เก็บฟาง']=1,['เพชร']=2,['เครื่องมือ']=3,['ร้านค้า']=4,['อัปเกรด']=5,['เป้าหมายด่าน']=6,['ไฮไลต์']=7,['เล่นใหม่']=8,['สถิติ']=9,['ตั้งค่า']=10}
-local function icon(parent,title)
+local function icon(parent,name)
     local holder=make('Frame',{Size=UDim2.fromOffset(24,24),Position=UDim2.fromOffset(7,10),BackgroundTransparency=1},parent)
     local parts={}
     local function line(x1,y1,x2,y2)
@@ -38,25 +37,25 @@ local function icon(parent,title)
         local part=make('Frame',{Size=UDim2.fromOffset(r*2,r*2),Position=UDim2.fromOffset(x-r,y-r),BackgroundTransparency=1,BorderSizePixel=0},holder)
         round(part,r);local edge=stroke(part,C.Muted);table.insert(parts,{edge,'Color'})
     end
-    if title=='ภาพรวม' then
+    if name=='home' then
         line(3,11,12,3);line(12,3,21,11);line(6,9,6,21);line(6,21,18,21);line(18,21,18,9);line(10,21,10,14);line(10,14,14,14);line(14,14,14,21)
-    elseif title=='เพชร' then
+    elseif name=='gem' then
         line(3,8,8,3);line(8,3,16,3);line(16,3,21,8);line(21,8,12,21);line(12,21,3,8);line(3,8,21,8);line(8,3,8,8);line(16,3,16,8);line(8,8,12,21);line(16,8,12,21)
-    elseif title=='เก็บฟาง' then
+    elseif name=='wheat' then
         line(6,22,17,3);for i=0,2 do line(9+i*3,17-i*5,4+i*3,12-i*5);line(9+i*3,17-i*5,16+i*2,15-i*5) end
-    elseif title=='เครื่องมือ' then
+    elseif name=='wrench' then
         line(5,20,16,9);line(5,20,3,18);line(3,18,14,7);line(14,7,14,2);line(14,2,18,6);line(18,6,22,6);line(22,6,20,10);line(20,10,16,9)
-    elseif title=='ร้านค้า' then
+    elseif name=='shopping-cart' then
         line(2,4,5,4);line(5,4,8,16);line(6,7,22,7);line(22,7,19,14);line(19,14,8,14);circle(9,20,1.8);circle(18,20,1.8)
-    elseif title=='อัปเกรด' or title=='สถิติ' then
+    elseif name=='trending-up' or name=='bar-chart' then
         line(4,21,4,15);line(10,21,10,11);line(16,21,16,6);line(3,10,18,2);line(18,2,18,7);line(18,2,13,2)
-    elseif title=='เป้าหมายด่าน' then
+    elseif name=='flag' or name=='target' then
         circle(12,12,9);circle(12,12,5);line(12,12,22,2);line(18,2,22,2);line(22,2,22,6)
-    elseif title=='ไฮไลต์' then
+    elseif name=='eye' then
         line(2,12,7,6);line(7,6,17,6);line(17,6,22,12);line(22,12,17,18);line(17,18,7,18);line(7,18,2,12);circle(12,12,3)
-    elseif title=='เล่นใหม่' then
+    elseif name=='repeat' then
         line(5,8,5,4);line(5,4,18,4);line(18,4,21,11);line(21,11,18,20);line(18,20,5,20);line(5,20,2,14);line(5,8,10,8)
-    elseif title=='ตั้งค่า' then
+    elseif name=='settings' then
         circle(12,12,7);circle(12,12,2.5)
         for i=0,7 do local a=math.pi*i/4;line(12+math.cos(a)*8,12+math.sin(a)*8,12+math.cos(a)*11,12+math.sin(a)*11) end
     else
@@ -69,7 +68,7 @@ function Library:Notify(config)
     if self.Unloaded or not self.Gui then return end
     local toast=make('Frame',{Name='Notification',Size=UDim2.fromOffset(320,94),Position=UDim2.new(1,-336,0,18),BackgroundColor3=C.Card,ZIndex=110},self.Gui)
     round(toast,10);stroke(toast,C.Lime);padding(toast,14)
-    local title=label(toast,config.Title or 'iNo Needle',15,C.Lime);title.ZIndex=111
+    local title=label(toast,config.Title or self.Title or 'iNo UI',15,C.Lime);title.ZIndex=111
     local content=label(toast,config.Content or '',12,C.Text);content.Position=UDim2.fromOffset(0,27);content.Size=UDim2.new(1,0,0,43);content.TextWrapped=true;content.ZIndex=111
     if self.Toast then self.Toast:Destroy() end
     self.Toast=toast
@@ -87,13 +86,15 @@ function Library:Destroy()
 end
 
 function Library:CreateWindow(config)
+    config=config or {}
     assert(not self.Gui,'Create one window per iNo UI library instance')
     self.PopupConnections={}
     local player=game:GetService('Players').LocalPlayer
     local parent=player:WaitForChild('PlayerGui')
     if type(gethui)=='function' then local ok,value=pcall(gethui);if ok and value then parent=value end end
-    local gui=make('ScreenGui',{Name='iNoNeedleUI',ResetOnSpawn=false,IgnoreGuiInset=true,DisplayOrder=10000,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},parent)
+    local gui=make('ScreenGui',{Name=config.Name or 'iNoUI',ResetOnSpawn=false,IgnoreGuiInset=true,DisplayOrder=10000,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},parent)
     self.Gui=gui
+    self.Title=config.Title or 'iNo UI'
     local window={Tabs={},Rows={},Selected=nil,Scale=1,Visible=true,Zoom=math.clamp(tonumber(config.UIScale) or 1,0.8,1.5),RequestedSize=config.Size or UDim2.fromOffset(760,480)}
     self.Window=window
     local frame=make('Frame',{Name='Window',Size=UDim2.fromOffset(1000,650),BackgroundColor3=C.Background,ClipsDescendants=false,Active=true},gui)
@@ -103,12 +104,11 @@ function Library:CreateWindow(config)
     make('Frame',{Size=UDim2.new(1,0,0,1),Position=UDim2.new(0,0,1,0),BackgroundColor3=C.Line,BorderSizePixel=0},header)
     local dragHandle=make('TextButton',{Name='DragWindow',Text='',Size=UDim2.new(1,-105,1,0),BackgroundTransparency=1},header)
     local logo=make('ImageLabel',{Name='BrandIcon',Size=UDim2.fromOffset(39,39),Position=UDim2.fromOffset(18,8),BackgroundColor3=C.Selected,Image='',ScaleType=Enum.ScaleType.Fit},header);round(logo,9)
-    local fallback=label(logo,'iNo',16,C.Lime);fallback.TextXAlignment=Enum.TextXAlignment.Center;fallback.Size=UDim2.fromScale(1,1)
+    local fallback=label(logo,config.LogoText or 'iN',16,C.Lime);fallback.TextXAlignment=Enum.TextXAlignment.Center;fallback.Size=UDim2.fromScale(1,1)
     window.BrandIcon=logo;window.BrandFallback=fallback
-    local title=label(header,'iNo',25,C.White);title.Position=UDim2.fromOffset(68,15);title.Size=UDim2.fromOffset(46,32);title.Font=Enum.Font.GothamBold
-    local name=label(header,'Needle',25,C.Lime);name.Position=UDim2.fromOffset(117,15);name.Size=UDim2.fromOffset(110,32);name.Font=Enum.Font.GothamBold
-    local map=label(header,'กำลังโหลด',11,C.Lime);map.Position=UDim2.fromOffset(240,23);map.Size=UDim2.fromOffset(106,24);map.TextXAlignment=Enum.TextXAlignment.Center;map.BackgroundColor3=C.Selected;round(map,5)
-    window.MapLabel=map
+    local title=label(header,self.Title,21,C.White);title.Position=UDim2.fromOffset(68,7);title.Size=UDim2.new(1,-174,0,26);title.Font=Enum.Font.GothamBold;title.TextTruncate=Enum.TextTruncate.AtEnd
+    local subtitle=label(header,config.SubTitle or '',11,C.Muted);subtitle.Position=UDim2.fromOffset(68,32);subtitle.Size=UDim2.new(1,-174,0,18);subtitle.TextTruncate=Enum.TextTruncate.AtEnd
+    window.TitleLabel=title;window.SubTitleLabel=subtitle
     local function topButton(text,x,color)
         local button=make('TextButton',{Text=text,Size=UDim2.fromOffset(42,42),Position=UDim2.new(1,x,0,10),BackgroundTransparency=1,TextColor3=color,TextSize=27,Font=Enum.Font.Gotham},header)
         return button
@@ -119,24 +119,24 @@ function Library:CreateWindow(config)
     local nav=make('ScrollingFrame',{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=2,ScrollBarImageColor3=C.Line,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y},sidebar)
     padding(nav,10);list(nav,5)
     local content=make('Frame',{Name='Main',Position=UDim2.fromOffset(176,56),Size=UDim2.new(1,-176,1,-100),BackgroundTransparency=1},frame)
-    local pageTitle=label(content,'ภาพรวม',24,C.Text);pageTitle.Position=UDim2.fromOffset(23,16);pageTitle.Size=UDim2.new(1,-320,0,36);pageTitle.Font=Enum.Font.GothamBold
+    local pageTitle=label(content,'',24,C.Text);pageTitle.Position=UDim2.fromOffset(23,16);pageTitle.Size=UDim2.new(1,-320,0,36);pageTitle.Font=Enum.Font.GothamBold
     local search=make('TextBox',{Name='Search',Text='',PlaceholderText='ค้นหาฟังก์ชัน...',Size=UDim2.fromOffset(245,36),Position=UDim2.new(1,-267,0,16),BackgroundColor3=C.Input,TextColor3=C.Text,PlaceholderColor3=C.Muted,TextSize=13,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false},content)
     padding(search,11);round(search,7);stroke(search,C.Line)
     local pages=make('Frame',{Name='Pages',Position=UDim2.fromOffset(22,65),Size=UDim2.new(1,-44,1,-80),BackgroundTransparency=1},content)
     local empty=label(pages,'ไม่พบฟังก์ชันที่ค้นหา',14,C.Muted);empty.Size=UDim2.new(1,0,0,60);empty.Visible=false
-    local footer=make('Frame',{Name='Footer',Position=UDim2.new(0,0,1,-44),Size=UDim2.new(1,0,0,44),BackgroundTransparency=1},frame)
+    local footer=make('Frame',{Name='Footer',Position=UDim2.new(0,0,1,-44),Size=UDim2.new(1,0,0,44),BackgroundTransparency=1,Visible=config.Footer==true},frame)
     make('Frame',{Size=UDim2.new(1,0,0,1),BackgroundColor3=C.Line,BorderSizePixel=0},footer)
-    local ready=label(footer,'●  กำลังเชื่อมข้อมูล',12,C.Muted);ready.Position=UDim2.fromOffset(18,14);ready.Size=UDim2.new(1,-320,0,24)
+    local ready=label(footer,config.StatusText or '',12,C.Muted);ready.Position=UDim2.fromOffset(18,10);ready.Size=UDim2.new(1,-36,0,24)
     window.StatusLabel=ready
-    local function footerButton(text,x,width,color)
-        local button=make('TextButton',{Text=text,Position=UDim2.new(1,x,0,5),Size=UDim2.fromOffset(width,34),BackgroundColor3=color,TextColor3=C.Text,TextSize=12,Font=Enum.Font.Gotham},footer)
-        round(button,6);stroke(button,C.Line);return button
+    window.FooterButtons={}
+    function window:AddFooterButton(buttonConfig)
+        local button=make('TextButton',{Text=buttonConfig.Title or 'ปุ่ม',Size=UDim2.fromOffset(140,34),BackgroundColor3=buttonConfig.Color or C.Card,TextColor3=C.Text,TextSize=12,Font=Enum.Font.Gotham},footer)
+        round(button,6);stroke(button,C.Line)
+        bind(button.Activated,function() call(buttonConfig.Callback) end)
+        table.insert(self.FooterButtons,button);footer.Visible=true
+        self:Resize()
+        return button
     end
-    local logs=footerButton('ดูบันทึก',-292,117,C.Card)
-    local pause=footerButton('Ⅱ  พักทั้งหมด',-165,147,Color3.fromRGB(126,43,44))
-    bind(logs.Activated,function() if window.OnLogs then call(window.OnLogs) end end)
-    bind(pause.Activated,function() call(window.OnPause) end)
-    window.FooterPause=pause
     function window:ClosePopup()
         self.SliderDrag=nil
         for _,connection in ipairs(Library.PopupConnections) do connection:Disconnect() end
@@ -164,11 +164,11 @@ function Library:CreateWindow(config)
     local install=buildControls(ctx)
     function window:AddTab(tabConfig)
         local tab={Title=tabConfig.Title or 'เมนู',Rows={}}
-        tab.Button=make('TextButton',{Name=tab.Title,Text='',Size=UDim2.new(1,0,0,44),BackgroundColor3=C.Sidebar,AutoButtonColor=false,LayoutOrder=priorities[tab.Title] or 20},nav);round(tab.Button,7)
-        local symbol=icon(tab.Button,tab.Title)
+        tab.Button=make('TextButton',{Name=tab.Title,Text='',Size=UDim2.new(1,0,0,44),BackgroundColor3=C.Sidebar,AutoButtonColor=false,LayoutOrder=tabConfig.Order or #self.Tabs+1},nav);round(tab.Button,7)
+        local symbol=icon(tab.Button,tabConfig.Icon)
         tab.Symbol=symbol
         local caption=label(tab.Button,tab.Title,13,C.Muted);caption.Position=UDim2.fromOffset(40,0);caption.Size=UDim2.new(1,-44,1,0);caption.TextWrapped=true
-        tab.Caption=caption
+        tab.Caption=caption;caption.Visible=self.Width>=520
         local indicator=make('Frame',{Size=UDim2.fromOffset(3,26),Position=UDim2.fromOffset(0,9),BackgroundColor3=C.Lime,Visible=false},tab.Button);round(indicator,2)
         tab.Indicator=indicator
         tab.Page=make('ScrollingFrame',{Name=tab.Title,Size=UDim2.fromScale(1,1),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,ScrollBarImageColor3=C.Line,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,Visible=false},pages)
@@ -176,6 +176,7 @@ function Library:CreateWindow(config)
         list(tab.Content,11)
         install(tab)
         table.insert(self.Tabs,tab)
+        search.Visible=true
         bind(tab.Button.Activated,function() self:SelectTab(tab) end)
         if not self.Selected then self:SelectTab(tab) end
         return tab
@@ -222,8 +223,8 @@ function Library:CreateWindow(config)
     bind(minimize.Activated,function() window:Minimize() end)
     bind(close.Activated,function()
         popup(close,function(container)
-            local description=label(container,'ปิดผู้ช่วยและหยุดระบบอัตโนมัติทั้งหมด?',13,C.Text);description.Size=UDim2.new(1,0,0,42);description.TextWrapped=true;description.ZIndex=54
-            local confirm=make('TextButton',{Text='ปิดผู้ช่วย',Size=UDim2.new(1,0,0,38),TextColor3=C.White,BackgroundColor3=C.Red,TextSize=14,Font=Enum.Font.Gotham,ZIndex=54},container);round(confirm,6)
+            local description=label(container,config.CloseMessage or 'ต้องการปิดหน้าต่างนี้หรือไม่?',13,C.Text);description.Size=UDim2.new(1,0,0,42);description.TextWrapped=true;description.ZIndex=54
+            local confirm=make('TextButton',{Text='ปิดหน้าต่าง',Size=UDim2.new(1,0,0,38),TextColor3=C.White,BackgroundColor3=C.Red,TextSize=14,Font=Enum.Font.Gotham,ZIndex=54},container);round(confirm,6)
             bind(confirm.Activated,function() if window.OnClose then call(window.OnClose) else Library:Destroy() end end,true)
             local cancel=make('TextButton',{Text='ยกเลิก',Size=UDim2.new(1,0,0,35),TextColor3=C.Text,BackgroundColor3=C.Input,TextSize=13,Font=Enum.Font.Gotham,ZIndex=54},container);round(cancel,6)
             bind(cancel.Activated,function() window:ClosePopup() end,true)
@@ -285,14 +286,22 @@ function Library:CreateWindow(config)
         frame.Size=UDim2.fromOffset(self.Width,self.Height);scale.Scale=self.Scale
         local short=self.Height<380
         local headerHeight=short and 44 or 56
-        local footerHeight=short and 40 or 44
+        local footerHeight=footer.Visible and (short and 40 or 44) or 0
         header.Size=UDim2.new(1,0,0,headerHeight)
         logo.Size=UDim2.fromOffset(short and 32 or 39,short and 32 or 39)
         logo.Position=UDim2.fromOffset(18,short and 6 or 8)
-        title.Position=UDim2.fromOffset(68,short and 6 or 15);name.Position=UDim2.fromOffset(117,short and 6 or 15)
-        title.TextSize=short and 20 or 25;name.TextSize=short and 20 or 25
+        title.Position=UDim2.fromOffset(68,short and 4 or 7);title.TextSize=short and 18 or 21
+        subtitle.Position=UDim2.fromOffset(68,short and 25 or 32);subtitle.TextSize=short and 10 or 11
         minimize.Position=UDim2.new(1,-95,0,short and 1 or 7);close.Position=UDim2.new(1,-49,0,short and 1 or 7)
         footer.Position=UDim2.new(0,0,1,-footerHeight);footer.Size=UDim2.new(1,0,0,footerHeight)
+        local buttonWidth=math.min(140,(self.Width-36)/math.max(1,#self.FooterButtons)-8)
+        for index,button in ipairs(self.FooterButtons) do
+            button.Size=UDim2.fromOffset(buttonWidth,30)
+            button.Position=UDim2.new(1,-18-(#self.FooterButtons-index+1)*(buttonWidth+8),0,(footerHeight-30)/2)
+        end
+        local actionWidth=#self.FooterButtons*(buttonWidth+8)
+        ready.Size=UDim2.new(1,-36-actionWidth,0,24)
+        ready.Position=UDim2.fromOffset(18,(footerHeight-24)/2)
         local side=self.Width<520 and 56 or self.Width<760 and 126 or 152
         sidebar.Position=UDim2.fromOffset(0,headerHeight);sidebar.Size=UDim2.new(0,side,1,-headerHeight-footerHeight)
         content.Position=UDim2.fromOffset(side,headerHeight);content.Size=UDim2.new(1,-side,1,-headerHeight-footerHeight)
@@ -303,7 +312,7 @@ function Library:CreateWindow(config)
         search.Position=compact and UDim2.fromOffset(14,short and 5 or 15) or UDim2.new(1,-267,0,short and 5 or 16)
         search.Size=compact and UDim2.new(1,-28,0,short and 30 or 36) or UDim2.fromOffset(245,short and 30 or 36)
         pages.Position=UDim2.fromOffset(compact and 14 or 22,short and 43 or 65);pages.Size=UDim2.new(1,compact and -28 or -44,1,short and -52 or -80)
-        map.Visible=self.Width>=590 and not short;ready.Visible=self.Width>=650 and not short
+        ready.Visible=self.Width-actionWidth>=320 and not short
         self:SetPosition(Vector2.new(frame.Position.X.Offset,frame.Position.Y.Offset))
         if self.OnResize then call(self.OnResize,self.Width-side-44) end
     end
@@ -322,7 +331,8 @@ function Library:CreateWindow(config)
     end
     bind(workspace:GetPropertyChangedSignal('CurrentCamera'),watchCamera)
     watchCamera();window:ResetPosition()
-    window.Overview=window:AddTab({Title='ภาพรวม'})
+    search.Visible=false
+    window:SetBrandImage(config.Icon)
     return window
 end
 return Library
