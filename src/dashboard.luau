@@ -95,13 +95,10 @@ return function(library,window,state,remotes,player,savedOptions)
     end
     shortcut('ตั้งค่าเป้าหมายด่าน  ›','เป้าหมายด่าน')
     shortcut('ดูสถานะเครื่องมือ  ›','เครื่องมือ')
-    local logsTab=window:AddTab({Title='บันทึก',Icon='file-text'})
-    local logsInfo=logsTab:AddParagraph({Title='เหตุการณ์ล่าสุด',Content='รอบันทึกการทำงานจริง'})
-    logsTab:AddParagraph({Title='เกี่ยวกับบันทึก',Content='แสดง 10 รายการล่าสุดของผู้ช่วย แยกคำขอทำงานออกจากผลที่ยืนยันแล้ว รายละเอียดเพิ่มเติมยังดูได้จาก Needle Live'})
-    window.OnLogs=function() window:SelectTab(logsTab) end
     window.OnPause=function()
         if state.pauseAll then state.pauseAll();library:Notify({Title='พักทั้งหมดแล้ว',Content='เปิดฟังก์ชันที่ต้องการอีกครั้งจากเมนู',Duration=3}) end
     end
+    window:AddFooterButton({Title='Ⅱ  พักทั้งหมด',Color=Color3.fromRGB(126,43,44),Callback=function() window.OnPause() end})
     window.OnClose=function() state.stop() end
     window.OnPositionChanged=function(position) state.windowPosition=position end
     local section='controls'
@@ -160,7 +157,6 @@ return function(library,window,state,remotes,player,savedOptions)
         window:SetPosition(Vector2.new(position.x*viewport.X,position.y*viewport.Y))
         state.windowPosition={x=window.Root.Position.X.Offset/viewport.X,y=window.Root.Position.Y.Offset/viewport.Y}
     else window:ResetPosition() end
-    local lastLogSequence
     local function tick()
         local stats=player:FindFirstChild('leaderstats')
         local cash=stats and stats:FindFirstChild('Cash')
@@ -169,7 +165,7 @@ return function(library,window,state,remotes,player,savedOptions)
         local held,capacity=player:GetAttribute('HayHeld'),player:GetAttribute('HayCapacity')
         text(values[3],held~=nil and capacity~=nil and (tostring(held)..' / '..tostring(capacity)) or '—')
         local map=remotes:GetAttribute('Map')
-        text(window.MapLabel,tostring(map or 'รอข้อมูล'))
+        text(window.SubTitleLabel,tostring(map or 'รอข้อมูล'))
         local phase=state.objectiveStatus and translate(state.objectiveStatus()) or 'รอข้อมูลเป้าหมาย'
         text(objectiveState,phase)
         local complete=player:GetAttribute('NeedleRoundComplete')==true
@@ -210,24 +206,12 @@ return function(library,window,state,remotes,player,savedOptions)
         table.insert(order,'ฟางธรรมดา');priority:SetDesc(table.concat(order,' → '))
         local fault=state.objectiveFault or state.extrasFault or state.shopFault or state.replayFault
         window:SetStatus(fault and 'มีระบบหยุด ตรวจเมนูตั้งค่า' or state.objectiveBusy and 'กำลังทำเป้าหมาย' or state.auto and 'กำลังเก็บฟาง' or 'พร้อมทำงาน',fault~=nil and fault~=false)
-        local logs=state.logs or {}
-        local latest=logs[#logs]
-        if latest and lastLogSequence~=latest.seq then
-            lastLogSequence=latest.seq
-            local lines={}
-            for index=math.max(1,#logs-9),#logs do
-                local entry=logs[index]
-                local kind=({confirmed='ยืนยัน',request='สั่งงาน',state='สถานะ',error='ผิดพลาด'})[entry.kind] or entry.kind
-                table.insert(lines,'['..tostring(kind)..'] '..translate(entry.message))
-            end
-            logsInfo:SetDesc(table.concat(lines,'\n\n'))
-        end
     end
     state.uiDashboardUpdate=tick
     task.spawn(function()
         while state.alive and not library.Unloaded do
             local ok,err=pcall(tick)
-            if not ok then state.diagnostics.uiError=tostring(err);window:SetStatus('แสดงข้อมูลไม่ครบ ตรวจบันทึก',true)
+            if not ok then state.diagnostics.uiError=tostring(err);window:SetStatus('แสดงข้อมูลไม่ครบ',true)
             else state.diagnostics.uiError=nil end
             task.wait(0.6)
         end
