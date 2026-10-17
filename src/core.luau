@@ -283,15 +283,27 @@ function Library:CreateWindow(config)
         self.Width=width/self.Scale
         self.Height=height/self.Scale
         frame.Size=UDim2.fromOffset(self.Width,self.Height);scale.Scale=self.Scale
+        local short=self.Height<380
+        local headerHeight=short and 44 or 56
+        local footerHeight=short and 40 or 44
+        header.Size=UDim2.new(1,0,0,headerHeight)
+        logo.Size=UDim2.fromOffset(short and 32 or 39,short and 32 or 39)
+        logo.Position=UDim2.fromOffset(18,short and 6 or 8)
+        title.Position=UDim2.fromOffset(68,short and 6 or 15);name.Position=UDim2.fromOffset(117,short and 6 or 15)
+        title.TextSize=short and 20 or 25;name.TextSize=short and 20 or 25
+        minimize.Position=UDim2.new(1,-95,0,short and 1 or 7);close.Position=UDim2.new(1,-49,0,short and 1 or 7)
+        footer.Position=UDim2.new(0,0,1,-footerHeight);footer.Size=UDim2.new(1,0,0,footerHeight)
         local side=self.Width<520 and 56 or self.Width<760 and 126 or 152
-        sidebar.Size=UDim2.new(0,side,1,-100);content.Position=UDim2.fromOffset(side,56);content.Size=UDim2.new(1,-side,1,-100)
+        sidebar.Position=UDim2.fromOffset(0,headerHeight);sidebar.Size=UDim2.new(0,side,1,-headerHeight-footerHeight)
+        content.Position=UDim2.fromOffset(side,headerHeight);content.Size=UDim2.new(1,-side,1,-headerHeight-footerHeight)
         for _,tab in ipairs(self.Tabs) do tab.Caption.Visible=side>60 end
         local compact=self.Width-side<540
         pageTitle.Visible=not compact
-        search.Position=compact and UDim2.fromOffset(14,15) or UDim2.new(1,-267,0,16)
-        search.Size=compact and UDim2.new(1,-28,0,36) or UDim2.fromOffset(245,36)
-        pages.Position=UDim2.fromOffset(compact and 14 or 22,65);pages.Size=UDim2.new(1,compact and -28 or -44,1,-80)
-        map.Visible=self.Width>=590;ready.Visible=self.Width>=650
+        pageTitle.Position=UDim2.fromOffset(23,short and 4 or 16);pageTitle.TextSize=short and 20 or 24
+        search.Position=compact and UDim2.fromOffset(14,short and 5 or 15) or UDim2.new(1,-267,0,short and 5 or 16)
+        search.Size=compact and UDim2.new(1,-28,0,short and 30 or 36) or UDim2.fromOffset(245,short and 30 or 36)
+        pages.Position=UDim2.fromOffset(compact and 14 or 22,short and 43 or 65);pages.Size=UDim2.new(1,compact and -28 or -44,1,short and -52 or -80)
+        map.Visible=self.Width>=590 and not short;ready.Visible=self.Width>=650 and not short
         self:SetPosition(Vector2.new(frame.Position.X.Offset,frame.Position.Y.Offset))
         if self.OnResize then call(self.OnResize,self.Width-side-44) end
     end
